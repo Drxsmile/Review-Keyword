@@ -1,3 +1,5 @@
+import math
+
 from django.http import HttpResponse
 from django.shortcuts import render
 from .models import Text, Review
@@ -78,8 +80,66 @@ def count(request):
         review.save()
     return HttpResponse("count term frequency success")
 
-# def test(request):
-#     for review in Text.objects:
-#         wordlist = review.words
-#         print(wordlist[:3])
-#     return HttpResponse('success')
+
+def weight(request):
+    # 语料库
+    data = []
+    for review in Review.objects:
+        data.append(review.words)
+
+    # df
+    words = []
+    for wordlist in data:
+        words += wordlist
+    words = set(words)
+    df_dic = {}
+    for word in words:
+        for wordlist in data:
+            if word in wordlist:
+                if word in df_dic:
+                    df_dic[word] += 1
+                else:
+                    df_dic[word] = 1
+    # idf
+    idf_dic = {}
+    num_doc = len(data)
+    for k, v in df_dic.items():
+        idf_dic[k] = math.log(num_doc/v)
+
+    # tf & tfidf
+    # tf_list = []
+    tfidf_list = []
+    for wordlist in data:
+        tf_dic = {}
+        for word in wordlist:
+            if word in tf_dic:
+                tf_dic[word] += 1
+            else:
+                tf_dic[word] = 1
+        tf_max = max(tf_dic.values())
+        # doc_len = len(wordlist)
+        tfidf_dic = {}
+        for k, v in tf_dic.items():
+            # tf_dic[k] = v / tf_max
+            # tf_dic[k] = v / doc_len
+            tfidf_dic[k] = v / tf_max * idf_dic[k]
+        # tf_list.append(tf_dic)
+        tfidf_list.append(tfidf_dic)
+    # database
+    i = 0
+    for review in Review.objects:
+        review.tf_idf = sorted(tfidf_list[i].items(), key=lambda x: x[1], reverse=True)
+        tfidflist = review.tf_idf
+        temp = tfidflist[:5]
+        keylist = []
+        for tup in temp:
+            keylist.append(tup[0])
+        review.key_word = keylist
+        review.save()
+        i += 1
+    return HttpResponse("weight success")
+
+def test(request):
+    print(len(Text.objects))
+    print(Text.objects[0]) # 不行
+    return HttpResponse('success')
