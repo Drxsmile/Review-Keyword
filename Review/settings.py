@@ -82,7 +82,9 @@ DATABASES = {
     }
 }
 from mongoengine import connect
-connect('yelp')
+
+connect('yelp',
+        unicode_decode_error_handler='ignore')
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
