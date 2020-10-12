@@ -5,8 +5,8 @@ def read_all():
     review_list = []
     for review in Review.objects:
         # 先读取这些
-        # if len(review_list) == 1000:
-        #     break
+        if len(review_list) == 10000:
+            break
         review_list.append(review.text)
     return review_list
 

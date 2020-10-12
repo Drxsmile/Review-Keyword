@@ -6,13 +6,13 @@ from Keyword.dao import read_all, get_df, update_df, get_tf_all
 from Keyword.models import Review
 from Keyword.service import df, tfidf
 
-num_doc = 0
+# 从数据库中读取
+review_list = read_all()
+num_doc = len(review_list)
+
+
 def weight(request):
     start = time.process_time()
-
-    # 从数据库中读取
-    review_list = read_all()
-    num_doc = len(review_list)
     df_dic = {}#get_df()
     for i in range(num_doc):
         df(review_list[i], df_dic)
@@ -30,9 +30,10 @@ def weight(request):
 
 def keyword(request):
     df_dic = get_df()
-    review = Review.objects[0]
+    review = Review.objects[0].text
     keyword = tfidf(review, df_dic, num_doc)
-    return HttpResponse(review, keyword)
+    print(keyword)
+    return HttpResponse(review)
 
 
 def test(request):
