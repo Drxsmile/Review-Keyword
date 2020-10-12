@@ -45,16 +45,16 @@ def get_wordnet_pos(tag):
         return None
 
 
-def tf_df(review, df_dic):
+def df(review, df_dic):
     wordlist = clean(review)
     wordlist_set = set()
-    tf_dic = {}
+    # tf_dic = {}
     for word in wordlist:
         # word frequency
-        if word in tf_dic:
-            tf_dic[word] += 1
-        else:
-            tf_dic[word] = 1
+        # if word in tf_dic:
+        #     tf_dic[word] += 1
+        # else:
+        #     tf_dic[word] = 1
         # df
         if word not in wordlist_set:
             wordlist_set.add(word)
@@ -62,10 +62,18 @@ def tf_df(review, df_dic):
                 df_dic[word] += 1
             else:
                 df_dic[word] = 1
-    save_tf(tf_dic)
+    # save_tf(tf_dic)
 
 
-def tfidf(tf_dic, df_dic, num_doc, index):
+def tfidf(review, df_dic, num_doc):
+    wordlist = clean(review)
+    tf_dic = {}
+    for word in wordlist:
+        # word frequency
+        if word in tf_dic:
+            tf_dic[word] += 1
+        else:
+            tf_dic[word] = 1
     tf_max = max(tf_dic.values())
     tfidf_dic = {}
     for k, v in tf_dic.items():
@@ -75,5 +83,5 @@ def tfidf(tf_dic, df_dic, num_doc, index):
     keyword_list = []
     for tup in temp:
         keyword_list.append(tup[0])
-    save_keyword(index, keyword_list)
+    return keyword_list
 
