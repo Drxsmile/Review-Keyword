@@ -1,5 +1,5 @@
 import time
-
+import weakref
 from django.http import HttpResponse
 
 from Keyword.dao import read_all, get_df, update_df, get_tf_all
@@ -13,14 +13,13 @@ num_doc = len(review_list)
 
 def weight(request):
     start = time.process_time()
-    df_dic = {}#get_df()
+    df_dic = get_df()
     for i in range(num_doc):
-        df(review_list[i], df_dic)
-        break
+        df_new = df(review_list[i], df_dic)
+        update_df(df_new)
     # tf_list = get_tf_all()
     # for i in range(len(tf_list)):
     #     tfidf(tf_list[i], df_dic, num_doc, i)
-    update_df(df_dic)
 
     # time consuming
     end = time.process_time()

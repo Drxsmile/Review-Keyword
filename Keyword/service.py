@@ -5,7 +5,7 @@ from nltk import pos_tag, word_tokenize
 from nltk.corpus import stopwords, wordnet
 from nltk.stem import WordNetLemmatizer
 
-from Keyword.dao import save_keyword, save_tf
+from Keyword.dao import save_keyword, save_tf, get_df
 
 
 def clean(review):
@@ -62,7 +62,7 @@ def df(review, df_dic):
                 df_dic[word] += 1
             else:
                 df_dic[word] = 1
-    # save_tf(tf_dic)
+    return df_dic
 
 
 def tfidf(review, df_dic, num_doc):

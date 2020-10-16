@@ -18,8 +18,8 @@ def save_keyword(index, keyword_list):
 
 
 def get_df():
-    df_dic = Df.objects[0].df_dic
-    return df_dic
+    df = Df.objects[0].df_dic
+    return df
 
 
 def update_df(df_dic):
