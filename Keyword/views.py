@@ -1,26 +1,18 @@
 import time
-import weakref
+
 from django.http import HttpResponse
 
-from Keyword.dao import read_all, get_df, update_df, get_tf_all
-from Keyword.models import Review
-from Keyword.service import df, tfidf
+from Keyword.dao import get_df, get_review, read_all, update_df
+from Keyword.models import Review, Df
+from Keyword.service import df, tfidf, count, phrase, get_stop, df_phrase, tfidf_phrase, get_punc
 
-# 从数据库中读取
-review_list = read_all()
-num_doc = len(review_list)
-
+e = 10
+stop = get_stop()
+punc = get_punc()
 
 def weight(request):
     start = time.process_time()
-    df_dic = get_df()
-    for i in range(num_doc):
-        df_new = df(review_list[i], df_dic)
-        update_df(df_new)
-    # tf_list = get_tf_all()
-    # for i in range(len(tf_list)):
-    #     tfidf(tf_list[i], df_dic, num_doc, i)
-
+    count(0, e)
     # time consuming
     end = time.process_time()
     time_used = (end - start) / 60000  # ms--->min
@@ -29,23 +21,37 @@ def weight(request):
 
 def keyword(request):
     df_dic = get_df()
-    review = Review.objects[0].text
+    review = get_review(0)
+    num_doc = e * 10000
     keyword = tfidf(review, df_dic, num_doc)
     print(keyword)
     return HttpResponse(review)
 
 
-def test(request):
-    x = 4
-    # print(len(Text.objects))
-    # df = {"some" : 2, "sum" : 3}
-    # Df(df_dic = df).save()
+def weight_phrase(request):
+    start = time.process_time()
+    review_list = read_all(0)
+    df_dic = get_df(1)
+    for review in review_list:
+        df_phrase(review, punc, stop, df_dic)
+    update_df(df_dic, 1)
 
-    # df = Df.objects[0]
-    # df.df_dic = {}
-    # df.save()
-    # update_df({})
-    df_dic = get_df()
-    print(df_dic)
-    # print(Text.objects[0].text)
-    return HttpResponse(x)
+    # time consuming
+    end = time.process_time()
+    time_used = (end - start) / 60000  # ms--->min
+    return HttpResponse(time_used)
+
+
+def key_phrase(request):
+    df_dic = get_df(1)
+    review = get_review(0)
+    num_doc = 10000
+    keyword = tfidf_phrase(review, df_dic, num_doc, punc, stop)
+    print(keyword)
+    return HttpResponse(review)
+
+
+def test(request):
+    review = get_review(0)
+    phrase_list = phrase(review, punc, stop)
+    return HttpResponse(e)

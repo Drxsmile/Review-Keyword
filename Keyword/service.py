@@ -1,11 +1,43 @@
 import math
 import string
+from string import punctuation
 
 from nltk import pos_tag, word_tokenize
 from nltk.corpus import stopwords, wordnet
 from nltk.stem import WordNetLemmatizer
 
-from Keyword.dao import save_keyword, save_tf, get_df
+
+from Keyword.dao import get_df, save_keyword, save_tf, read_all, update_df
+
+
+def get_punc():
+    punc_dict = {}
+    for i in range(len(punctuation)):
+        punc_dict[punctuation[i]] = "*"
+    punc_dict.pop("'")
+    punc_dict.pop("*")
+    punc_dict["."] = " "
+    return punc_dict
+
+
+def get_stop():
+    stoplist = stopwords.words('english')
+    stoplist.remove('not')
+    return stoplist
+
+
+def phrase(review, punc, stop):
+    lower = review.lower()
+    table = str.maketrans(punc)
+    without_punc = lower.translate(table)
+    for word in stop:
+        s = " " + word + " "
+        without_punc = without_punc.replace(s, " " + "*" + " ")
+    phrase_list = without_punc.split("*")
+    for i in range(len(phrase_list)):
+        phrase_list[i] = phrase_list[i].strip()
+    phrase_list = list(filter(None, phrase_list))
+    return phrase_list
 
 
 def clean(review):
@@ -62,7 +94,6 @@ def df(review, df_dic):
                 df_dic[word] += 1
             else:
                 df_dic[word] = 1
-    return df_dic
 
 
 def tfidf(review, df_dic, num_doc):
@@ -85,3 +116,49 @@ def tfidf(review, df_dic, num_doc):
         keyword_list.append(tup[0])
     return keyword_list
 
+
+# count(0, 1) 执行的是前10000条review
+def count(start, end):
+    df_dic = get_df()
+    while start < end:
+        # 从数据库中读取10000条review
+        review_list = read_all(start)
+        for i in range(10000):
+            df(review_list[i], df_dic)
+            if (i+1) % 10000 == 0:
+                update_df(df_dic)
+        start += 1
+        print(start)
+
+
+def df_phrase(review, punc, stop, df_dic):
+    wordlist = phrase(review, punc, stop)
+    wordlist_set = set()
+    for word in wordlist:
+        if word not in wordlist_set:
+            wordlist_set.add(word)
+            if word in df_dic:
+                df_dic[word] += 1
+            else:
+                df_dic[word] = 1
+
+
+def tfidf_phrase(review, df_dic, num_doc, punc, stop):
+    wordlist = phrase(review, punc, stop)
+    tf_dic = {}
+    for word in wordlist:
+        # word frequency
+        if word in tf_dic:
+            tf_dic[word] += 1
+        else:
+            tf_dic[word] = 1
+    tf_max = max(tf_dic.values())
+    tfidf_dic = {}
+    for k, v in tf_dic.items():
+        tfidf_dic[k] = v / tf_max * math.log(num_doc / df_dic[k])
+    tfidf_sorted = sorted(tfidf_dic.items(), key=lambda x: x[1], reverse=True)
+    temp = tfidf_sorted[:5]
+    keyword_list = []
+    for tup in temp:
+        keyword_list.append(tup[0])
+    return keyword_list

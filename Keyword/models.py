@@ -15,7 +15,7 @@ class Review(Document):
 
 
 class Df(Document):
-    df_dic = DictField()
+    df_dic = DynamicField()
 
 
 class Tf(Document):
