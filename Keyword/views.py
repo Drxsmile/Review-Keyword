@@ -3,8 +3,7 @@ import time
 from django.http import HttpResponse
 
 from Keyword.dao import get_df, get_review, read_all, update_df
-from Keyword.models import Review, Df
-from Keyword.service import df, tfidf, count, phrase, get_stop, df_phrase, tfidf_phrase, get_punc
+from Keyword.service import df, tfidf, count, phrase, get_stop, df_phrase, tfidf_phrase, get_punc, get_phrase
 
 e = 10
 stop = get_stop()
@@ -53,5 +52,7 @@ def key_phrase(request):
 
 def test(request):
     review = get_review(0)
-    phrase_list = phrase(review, punc, stop)
+    # phrase_list = phrase(review, punc, stop)
+    # get_phrase(review)
+    update_df({}, 1)
     return HttpResponse(e)

@@ -5,7 +5,7 @@ from string import punctuation
 from nltk import pos_tag, word_tokenize
 from nltk.corpus import stopwords, wordnet
 from nltk.stem import WordNetLemmatizer
-
+from textblob import TextBlob
 
 from Keyword.dao import get_df, save_keyword, save_tf, read_all, update_df
 
@@ -38,6 +38,17 @@ def phrase(review, punc, stop):
         phrase_list[i] = phrase_list[i].strip()
     phrase_list = list(filter(None, phrase_list))
     return phrase_list
+
+
+def get_phrase(review):
+    dict = {"$": "", "*": ""}
+    table = str.maketrans(dict)
+    without_dollar = review.translate(table)
+    blob = TextBlob(without_dollar)
+    phrase_list = blob.noun_phrases
+    # print(phrase_list)
+    return phrase_list
+
 
 
 def clean(review):
@@ -132,7 +143,8 @@ def count(start, end):
 
 
 def df_phrase(review, punc, stop, df_dic):
-    wordlist = phrase(review, punc, stop)
+    # wordlist = phrase(review, punc, stop)
+    wordlist = get_phrase(review)
     wordlist_set = set()
     for word in wordlist:
         if word not in wordlist_set:
@@ -144,7 +156,8 @@ def df_phrase(review, punc, stop, df_dic):
 
 
 def tfidf_phrase(review, df_dic, num_doc, punc, stop):
-    wordlist = phrase(review, punc, stop)
+    # wordlist = phrase(review, punc, stop)
+    wordlist = get_phrase(review)
     tf_dic = {}
     for word in wordlist:
         # word frequency
